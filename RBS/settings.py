@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'accounts',
     'access_control',
+    'business',
 ]
 
 MIDDLEWARE = [

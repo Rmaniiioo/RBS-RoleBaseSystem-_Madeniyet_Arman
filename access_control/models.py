@@ -26,7 +26,7 @@ class BussinesElement(models.Model):
             return self.code
         
 
-class AccesRoleRule(models.Model):
+class AccessRoleRule(models.Model):
     role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name= 'access_role')
     element = models.ForeignKey(BussinesElement, on_delete=models.CASCADE, related_name='role_rules')
     read_permission = models.BooleanField(default=False)
