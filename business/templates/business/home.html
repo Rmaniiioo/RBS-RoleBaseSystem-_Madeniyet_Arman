@@ -1,0 +1,1162 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RBA Access</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --line: #d7dde5;
+      --text: #1d2430;
+      --muted: #657286;
+      --primary: #166a63;
+      --primary-strong: #0e504b;
+      --danger: #b42318;
+      --warning: #9a6700;
+      --ok: #167c3b;
+      --shadow: 0 16px 38px rgba(31, 42, 55, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 0 14px;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 650;
+    }
+
+    button:hover { background: var(--primary-strong); }
+    button.secondary { background: #fff; border-color: var(--line); color: var(--text); }
+    button.secondary:hover { background: #eef2f6; }
+    button.danger { background: var(--danger); }
+    button.danger:hover { background: #8f1c13; }
+
+    input, select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      padding: 8px 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      background: #1f3b57;
+      color: #fff;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warning);
+    }
+
+    .dot.ok { background: var(--ok); }
+
+    main {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .panel-body {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .resource-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      min-height: 190px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+    }
+
+    .resource-card header {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .resource-card h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .resource-card ul {
+      margin: 0;
+      padding: 12px 14px;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .resource-card li {
+      border: 1px solid #e6ebf1;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 13px;
+      background: #fafbfc;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .tabs, .inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .inline-actions label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+    }
+
+    .inline-actions input[type="checkbox"] {
+      width: 18px;
+      min-height: 18px;
+      accent-color: var(--primary);
+    }
+
+    .muted { color: var(--muted); }
+    .hidden { display: none !important; }
+
+    .message {
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #eef6f4;
+      color: #14534f;
+      font-size: 13px;
+      border: 1px solid #bfddd8;
+    }
+
+    .message.error {
+      background: #fff1f0;
+      color: var(--danger);
+      border-color: #ffc9c3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 750;
+      background: #f8fafc;
+    }
+
+    td input[type="checkbox"] {
+      width: 18px;
+      min-height: 18px;
+      accent-color: var(--primary);
+    }
+
+    td input, td select {
+      min-width: 120px;
+    }
+
+    #adminUsersTable td:first-child {
+      min-width: 360px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .admin-wide {
+      grid-column: 1 / -1;
+    }
+
+    .compact-form {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: #eef2f6;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    @media (max-width: 980px) {
+      main { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar { padding: 14px; }
+      main { padding: 14px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .admin-grid, .compact-form { grid-template-columns: 1fr; }
+      .status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">R</div>
+        <div>
+          <h1>RBA Access</h1>
+          <p class="subtitle">Рабочее место для проверки собственной auth-системы</p>
+        </div>
+      </div>
+      <div class="status" id="sessionStatus">
+        <span class="dot" id="sessionDot"></span>
+        <span id="sessionText">Сессия не активна</span>
+      </div>
+    </header>
+
+    <main>
+      <aside class="panel">
+        <div class="panel-header">
+          <h2>Аккаунт</h2>
+          <button class="secondary hidden" id="logoutBtn" type="button">Выйти</button>
+        </div>
+        <div class="panel-body" id="guestBox">
+          <div class="tabs">
+            <button id="showLoginBtn" type="button">Вход</button>
+            <button class="secondary" id="showRegisterBtn" type="button">Регистрация</button>
+          </div>
+
+          <form id="loginForm" class="form-grid">
+            <label class="full">Email
+              <input name="email" type="email" value="admin@example.com" autocomplete="email" required>
+            </label>
+            <label class="full">Пароль
+              <input name="password" type="password" value="password123" autocomplete="current-password" required>
+            </label>
+            <button class="full" type="submit">Войти</button>
+          </form>
+
+          <form id="registerForm" class="form-grid hidden">
+            <label>Имя
+              <input name="first_name" required>
+            </label>
+            <label>Фамилия
+              <input name="last_name" required>
+            </label>
+            <label class="full">Отчество
+              <input name="middle_name">
+            </label>
+            <label class="full">Email
+              <input name="email" type="email" required>
+            </label>
+            <label>Пароль
+              <input name="password" type="password" minlength="8" required>
+            </label>
+            <label>Повтор пароля
+              <input name="password_repeat" type="password" minlength="8" required>
+            </label>
+            <button class="full" type="submit">Создать аккаунт</button>
+          </form>
+        </div>
+
+        <div class="panel-body hidden" id="profileBox">
+          <form id="profileForm" class="form-grid">
+            <label>Имя
+              <input name="first_name" required>
+            </label>
+            <label>Фамилия
+              <input name="last_name" required>
+            </label>
+            <label class="full">Отчество
+              <input name="middle_name">
+            </label>
+            <label class="full">Email
+              <input name="email" type="email" required>
+            </label>
+            <button class="full" type="submit">Сохранить профиль</button>
+          </form>
+          <button class="danger" id="deleteProfileBtn" type="button">Удалить аккаунт</button>
+        </div>
+
+        <div class="panel-body">
+          <div id="messageBox" class="message hidden"></div>
+          <div class="muted">
+            Демо: admin@example.com, manager@example.com, user@example.com; пароль password123.
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Бизнес-ресурсы</h2>
+          <div class="inline-actions">
+            <button class="secondary" data-load-resource="products" type="button">Товары</button>
+            <button class="secondary" data-load-resource="shops" type="button">Магазины</button>
+            <button class="secondary" data-load-resource="orders" type="button">Заказы</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="grid">
+            <article class="resource-card" data-card="products">
+              <header><h3>Товары</h3><span class="muted">products</span></header>
+              <ul id="productsList"><li>Войдите, чтобы загрузить список.</li></ul>
+              <div class="actions">
+                <button data-load-resource="products" type="button">Обновить</button>
+                <button class="secondary" data-create-resource="products" type="button">Создать mock</button>
+              </div>
+            </article>
+            <article class="resource-card" data-card="shops">
+              <header><h3>Магазины</h3><span class="muted">shops</span></header>
+              <ul id="shopsList"><li>Войдите, чтобы загрузить список.</li></ul>
+              <div class="actions">
+                <button data-load-resource="shops" type="button">Обновить</button>
+                <button class="secondary" data-create-resource="shops" type="button">Создать mock</button>
+              </div>
+            </article>
+            <article class="resource-card" data-card="orders">
+              <header><h3>Заказы</h3><span class="muted">orders</span></header>
+              <ul id="ordersList"><li>Войдите, чтобы загрузить список.</li></ul>
+              <div class="actions">
+                <button data-load-resource="orders" type="button">Обновить</button>
+                <button class="secondary" data-create-resource="orders" type="button">Создать mock</button>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="panel-header">
+          <h2>Правила доступа</h2>
+          <button class="secondary" id="loadRulesBtn" type="button">Загрузить</button>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Роль</th>
+                  <th>Ресурс</th>
+                  <th>read</th>
+                  <th>read all</th>
+                  <th>create</th>
+                  <th>update</th>
+                  <th>update all</th>
+                  <th>delete</th>
+                  <th>delete all</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rulesTable">
+                <tr><td colspan="10" class="muted">Доступно администратору.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-header">
+          <h2>Админка</h2>
+          <div class="inline-actions">
+            <button class="secondary" id="loadAdminBtn" type="button">Обновить всё</button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="admin-grid">
+            <section class="resource-card admin-wide">
+              <header><h3>Пользователи</h3><span class="muted">accounts_user</span></header>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Роль</th>
+                      <th>Активен</th>
+                      <th>Новый пароль</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminUsersTable">
+                    <tr><td colspan="5" class="muted">Доступно администратору.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <form id="createUserForm" class="compact-form">
+                <label>Email
+                  <input name="email" type="email" required>
+                </label>
+                <label>Имя
+                  <input name="first_name" required>
+                </label>
+                <label>Фамилия
+                  <input name="last_name" required>
+                </label>
+                <label>Пароль
+                  <input name="password" type="password" minlength="8" required>
+                </label>
+                <label>Роль
+                  <select name="role" id="createUserRoleSelect" required></select>
+                </label>
+                <button type="submit">Создать</button>
+              </form>
+            </section>
+
+            <section class="resource-card">
+              <header><h3>Роли</h3><span class="muted">access_control_role</span></header>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Код</th><th>Название</th><th>System</th><th></th></tr></thead>
+                  <tbody id="rolesTable"><tr><td colspan="4" class="muted">Загрузите админку.</td></tr></tbody>
+                </table>
+              </div>
+              <form id="createRoleForm" class="compact-form">
+                <label>Код
+                  <input name="code" placeholder="auditor" required>
+                </label>
+                <label>Название
+                  <input name="name" placeholder="Аудитор" required>
+                </label>
+                <label>Описание
+                  <input name="description">
+                </label>
+                <button type="submit">Создать</button>
+              </form>
+            </section>
+
+            <section class="resource-card">
+              <header><h3>Ресурсы</h3><span class="muted">business_elements</span></header>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Код</th><th>Название</th><th>Описание</th><th></th></tr></thead>
+                  <tbody id="elementsTable"><tr><td colspan="4" class="muted">Загрузите админку.</td></tr></tbody>
+                </table>
+              </div>
+              <form id="createElementForm" class="compact-form">
+                <label>Код
+                  <input name="code" placeholder="reports" required>
+                </label>
+                <label>Название
+                  <input name="name" placeholder="Отчеты" required>
+                </label>
+                <label>Описание
+                  <input name="description">
+                </label>
+                <button type="submit">Создать</button>
+              </form>
+            </section>
+
+            <section class="resource-card">
+              <header><h3>Новое правило</h3><span class="muted">role + resource</span></header>
+              <form id="createRuleForm" class="panel-body">
+                <div class="form-grid">
+                  <label>Роль
+                    <select name="role" id="ruleRoleSelect" required></select>
+                  </label>
+                  <label>Ресурс
+                    <select name="element" id="ruleElementSelect" required></select>
+                  </label>
+                </div>
+                <div class="inline-actions">
+                  <label><input type="checkbox" name="read_permission"> read</label>
+                  <label><input type="checkbox" name="read_all_permission"> read all</label>
+                  <label><input type="checkbox" name="create_permission"> create</label>
+                  <label><input type="checkbox" name="update_permission"> update</label>
+                  <label><input type="checkbox" name="update_all_permission"> update all</label>
+                  <label><input type="checkbox" name="delete_permission"> delete</label>
+                  <label><input type="checkbox" name="delete_all_permission"> delete all</label>
+                </div>
+                <button type="submit">Создать правило</button>
+              </form>
+            </section>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>JTI</th>
+                  <th>Пользователь</th>
+                  <th>Отозван</th>
+                  <th>Истекает</th>
+                </tr>
+              </thead>
+              <tbody id="tokensTable">
+                <tr><td colspan="4" class="muted">Журнал logout-токенов загрузится администратором.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      token: localStorage.getItem("accessToken"),
+      user: null,
+      roles: [],
+      elements: [],
+    };
+
+    const messageBox = document.querySelector("#messageBox");
+    const guestBox = document.querySelector("#guestBox");
+    const profileBox = document.querySelector("#profileBox");
+    const logoutBtn = document.querySelector("#logoutBtn");
+    const sessionDot = document.querySelector("#sessionDot");
+    const sessionText = document.querySelector("#sessionText");
+
+    function showMessage(text, type = "ok") {
+      messageBox.textContent = text;
+      messageBox.classList.toggle("error", type === "error");
+      messageBox.classList.remove("hidden");
+    }
+
+    function clearMessage() {
+      messageBox.classList.add("hidden");
+      messageBox.textContent = "";
+    }
+
+    function formData(form) {
+      return Object.fromEntries(new FormData(form).entries());
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function checkboxPayload(form) {
+      const payload = formData(form);
+      form.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        payload[input.name] = input.checked;
+      });
+      return payload;
+    }
+
+    async function api(path, options = {}) {
+      const headers = {"Content-Type": "application/json", ...(options.headers || {})};
+      if (state.token) headers.Authorization = `Bearer ${state.token}`;
+      const response = await fetch(path, {...options, headers});
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+      if (!response.ok) {
+        const detail = data?.detail || data?.non_field_errors?.[0] || JSON.stringify(data) || response.statusText;
+        const error = new Error(detail);
+        error.status = response.status;
+        throw error;
+      }
+      return data;
+    }
+
+    function applySession(user) {
+      state.user = user;
+      const active = Boolean(user);
+      guestBox.classList.toggle("hidden", active);
+      profileBox.classList.toggle("hidden", !active);
+      logoutBtn.classList.toggle("hidden", !active);
+      sessionDot.classList.toggle("ok", active);
+      sessionText.textContent = active ? `${user.email} · ${user.role}` : "Сессия не активна";
+
+      if (active) {
+        const form = document.querySelector("#profileForm");
+        form.first_name.value = user.first_name;
+        form.last_name.value = user.last_name;
+        form.middle_name.value = user.middle_name || "";
+        form.email.value = user.email;
+      }
+    }
+
+    function resetSession() {
+      localStorage.removeItem("accessToken");
+      state.token = null;
+      applySession(null);
+    }
+
+    async function refreshProfile() {
+      if (!state.token) {
+        applySession(null);
+        return;
+      }
+      try {
+        const user = await api("/api/auth/profile/");
+        applySession(user);
+      } catch (error) {
+        resetSession();
+      }
+    }
+
+    async function loadResource(resource) {
+      clearMessage();
+      const list = document.querySelector(`#${resource}List`);
+      list.innerHTML = "<li>Загрузка...</li>";
+      try {
+        const rows = await api(`/api/business/${resource}/`);
+        list.innerHTML = rows.length ? rows.map(row => {
+          const title = row.title || row.number || `#${row.id}`;
+          const value = row.price || row.amount || row.city || "";
+          return `<li><strong>${title}</strong><br><span class="muted">owner_id: ${row.owner_id}${value ? ` · ${value}` : ""}</span></li>`;
+        }).join("") : "<li>Нет доступных объектов.</li>";
+      } catch (error) {
+        list.innerHTML = `<li>${error.status || ""} ${error.message}</li>`;
+        showMessage(`${resource}: ${error.message}`, "error");
+      }
+    }
+
+    async function createResource(resource) {
+      clearMessage();
+      try {
+        const data = await api(`/api/business/${resource}/`, {
+          method: "POST",
+          body: JSON.stringify({title: `Mock ${resource}`, created_from: "web-ui"}),
+        });
+        showMessage(`${resource}: ${data.message}`);
+      } catch (error) {
+        showMessage(`${resource}: ${error.message}`, "error");
+      }
+    }
+
+    async function loadRules() {
+      clearMessage();
+      const tbody = document.querySelector("#rulesTable");
+      tbody.innerHTML = `<tr><td colspan="10" class="muted">Загрузка...</td></tr>`;
+      try {
+        const rules = await api("/api/access/rules/");
+        tbody.innerHTML = rules.map(rule => {
+          const boxes = [
+            "read_permission",
+            "read_all_permission",
+            "create_permission",
+            "update_permission",
+            "update_all_permission",
+            "delete_permission",
+            "delete_all_permission",
+          ].map(field => `<td><input type="checkbox" data-rule="${rule.id}" data-field="${field}" ${rule[field] ? "checked" : ""}></td>`).join("");
+
+          return `<tr>
+            <td>${rule.role_code}</td>
+            <td>${rule.element_code}</td>
+            ${boxes}
+            <td><button class="secondary" data-save-rule="${rule.id}" type="button">OK</button></td>
+          </tr>`;
+        }).join("");
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="10">${error.status || ""} ${error.message}</td></tr>`;
+        showMessage(`Правила доступа: ${error.message}`, "error");
+      }
+    }
+
+    async function saveRule(ruleId) {
+      const fields = document.querySelectorAll(`[data-rule="${ruleId}"]`);
+      const payload = {};
+      fields.forEach(input => {
+        payload[input.dataset.field] = input.checked;
+      });
+      try {
+        await api(`/api/access/rules/${ruleId}/`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        showMessage(`Правило #${ruleId} сохранено.`);
+      } catch (error) {
+        showMessage(`Правило #${ruleId}: ${error.message}`, "error");
+      }
+    }
+
+    function fillSelect(select, rows, labelField = "code") {
+      select.innerHTML = rows.map(row => (
+        `<option value="${row.id}">${escapeHtml(row[labelField] || row.code || row.name)}</option>`
+      )).join("");
+    }
+
+    async function loadRoles() {
+      state.roles = await api("/api/access/roles/");
+      fillSelect(document.querySelector("#createUserRoleSelect"), state.roles);
+      fillSelect(document.querySelector("#ruleRoleSelect"), state.roles);
+      document.querySelector("#rolesTable").innerHTML = state.roles.map(role => `
+        <tr>
+          <td><input data-role-id="${role.id}" data-role-field="code" value="${escapeHtml(role.code)}"></td>
+          <td><input data-role-id="${role.id}" data-role-field="name" value="${escapeHtml(role.name)}"></td>
+          <td><span class="pill">${role.is_system ? "yes" : "no"}</span></td>
+          <td><button class="secondary" data-save-role="${role.id}" type="button">OK</button></td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadElements() {
+      state.elements = await api("/api/access/elements/");
+      fillSelect(document.querySelector("#ruleElementSelect"), state.elements);
+      document.querySelector("#elementsTable").innerHTML = state.elements.map(element => `
+        <tr>
+          <td><input data-element-id="${element.id}" data-element-field="code" value="${escapeHtml(element.code)}"></td>
+          <td><input data-element-id="${element.id}" data-element-field="name" value="${escapeHtml(element.name)}"></td>
+          <td><input data-element-id="${element.id}" data-element-field="description" value="${escapeHtml(element.description)}"></td>
+          <td><button class="secondary" data-save-element="${element.id}" type="button">OK</button></td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadUsers() {
+      const users = await api("/api/auth/admin/users/");
+      document.querySelector("#adminUsersTable").innerHTML = users.map(user => `
+        <tr>
+          <td>
+            <input data-user-id="${user.id}" data-user-field="email" type="email" value="${escapeHtml(user.email)}">
+            <input data-user-id="${user.id}" data-user-field="first_name" value="${escapeHtml(user.first_name)}" title="Имя">
+            <input data-user-id="${user.id}" data-user-field="last_name" value="${escapeHtml(user.last_name)}" title="Фамилия">
+          </td>
+          <td>
+            <select data-user-id="${user.id}" data-user-field="role">
+              ${state.roles.map(role => `<option value="${role.id}" ${role.id === user.role ? "selected" : ""}>${escapeHtml(role.code)}</option>`).join("")}
+            </select>
+          </td>
+          <td><input type="checkbox" data-user-id="${user.id}" data-user-field="is_active" ${user.is_active ? "checked" : ""}></td>
+          <td><input type="password" data-user-id="${user.id}" data-user-field="password" placeholder="оставить пустым"></td>
+          <td>
+            <button class="secondary" data-save-user="${user.id}" type="button">OK</button>
+            <button class="danger" data-delete-user="${user.id}" type="button">Удалить</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    async function loadTokens() {
+      const tokens = await api("/api/auth/admin/revoked-tokens/");
+      document.querySelector("#tokensTable").innerHTML = tokens.length ? tokens.map(token => `
+        <tr>
+          <td>${escapeHtml(token.jti.slice(0, 12))}...</td>
+          <td>${escapeHtml(token.user_email)}</td>
+          <td>${escapeHtml(new Date(token.revoked_at).toLocaleString())}</td>
+          <td>${escapeHtml(new Date(token.expires_at).toLocaleString())}</td>
+        </tr>
+      `).join("") : `<tr><td colspan="4" class="muted">Пока нет отозванных токенов.</td></tr>`;
+    }
+
+    async function loadAdminData() {
+      clearMessage();
+      try {
+        await loadRoles();
+        await loadElements();
+        await loadUsers();
+        await loadTokens();
+        await loadRules();
+        showMessage("Админка обновлена.");
+      } catch (error) {
+        showMessage(`Админка: ${error.message}`, "error");
+      }
+    }
+
+    async function saveUser(userId) {
+      const fields = document.querySelectorAll(`[data-user-id="${userId}"]`);
+      const payload = {};
+      fields.forEach(input => {
+        const field = input.dataset.userField;
+        if (field === "is_active") payload[field] = input.checked;
+        else if (field === "role") payload[field] = Number(input.value);
+        else if (field === "password" && input.value) payload[field] = input.value;
+        else if (field !== "password") payload[field] = input.value;
+      });
+      try {
+        await api(`/api/auth/admin/users/${userId}/`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        showMessage(`Пользователь #${userId} сохранен.`);
+        await loadUsers();
+      } catch (error) {
+        showMessage(`Пользователь #${userId}: ${error.message}`, "error");
+      }
+    }
+
+    async function saveRole(roleId) {
+      const payload = {};
+      document.querySelectorAll(`[data-role-id="${roleId}"]`).forEach(input => {
+        payload[input.dataset.roleField] = input.value;
+      });
+      try {
+        await api(`/api/access/roles/${roleId}/`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        showMessage(`Роль #${roleId} сохранена.`);
+        await loadRoles();
+        await loadUsers();
+      } catch (error) {
+        showMessage(`Роль #${roleId}: ${error.message}`, "error");
+      }
+    }
+
+    async function saveElement(elementId) {
+      const payload = {};
+      document.querySelectorAll(`[data-element-id="${elementId}"]`).forEach(input => {
+        payload[input.dataset.elementField] = input.value;
+      });
+      try {
+        await api(`/api/access/elements/${elementId}/`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        showMessage(`Ресурс #${elementId} сохранен.`);
+        await loadElements();
+        await loadRules();
+      } catch (error) {
+        showMessage(`Ресурс #${elementId}: ${error.message}`, "error");
+      }
+    }
+
+    document.querySelector("#showLoginBtn").addEventListener("click", () => {
+      document.querySelector("#loginForm").classList.remove("hidden");
+      document.querySelector("#registerForm").classList.add("hidden");
+    });
+
+    document.querySelector("#showRegisterBtn").addEventListener("click", () => {
+      document.querySelector("#registerForm").classList.remove("hidden");
+      document.querySelector("#loginForm").classList.add("hidden");
+    });
+
+    document.querySelector("#loginForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      clearMessage();
+      try {
+        const data = await api("/api/auth/login/", {
+          method: "POST",
+          body: JSON.stringify(formData(event.currentTarget)),
+        });
+        state.token = data.access_token;
+        localStorage.setItem("accessToken", state.token);
+        applySession(data.user);
+        showMessage("Вход выполнен.");
+        ["products", "shops", "orders"].forEach(loadResource);
+      } catch (error) {
+        showMessage(error.message, "error");
+      }
+    });
+
+    document.querySelector("#registerForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      clearMessage();
+      try {
+        await api("/api/auth/register/", {
+          method: "POST",
+          body: JSON.stringify(formData(event.currentTarget)),
+        });
+        showMessage("Аккаунт создан. Теперь можно войти.");
+        event.currentTarget.reset();
+        document.querySelector("#showLoginBtn").click();
+      } catch (error) {
+        showMessage(error.message, "error");
+      }
+    });
+
+    document.querySelector("#profileForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      clearMessage();
+      try {
+        const user = await api("/api/auth/profile/", {
+          method: "PATCH",
+          body: JSON.stringify(formData(event.currentTarget)),
+        });
+        applySession(user);
+        showMessage("Профиль обновлен.");
+      } catch (error) {
+        showMessage(error.message, "error");
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        await api("/api/auth/logout/", {method: "POST"});
+      } finally {
+        resetSession();
+        showMessage("Вы вышли из системы.");
+      }
+    });
+
+    document.querySelector("#deleteProfileBtn").addEventListener("click", async () => {
+      clearMessage();
+      try {
+        await api("/api/auth/profile/", {method: "DELETE"});
+        resetSession();
+        showMessage("Аккаунт мягко удален. Повторный вход заблокирован.");
+      } catch (error) {
+        showMessage(error.message, "error");
+      }
+    });
+
+    document.querySelectorAll("[data-load-resource]").forEach(button => {
+      button.addEventListener("click", () => loadResource(button.dataset.loadResource));
+    });
+
+    document.querySelectorAll("[data-create-resource]").forEach(button => {
+      button.addEventListener("click", () => createResource(button.dataset.createResource));
+    });
+
+    document.querySelector("#loadRulesBtn").addEventListener("click", loadRules);
+    document.querySelector("#rulesTable").addEventListener("click", event => {
+      const button = event.target.closest("[data-save-rule]");
+      if (button) saveRule(button.dataset.saveRule);
+    });
+
+    document.querySelector("#loadAdminBtn").addEventListener("click", loadAdminData);
+
+    document.querySelector("#adminUsersTable").addEventListener("click", async event => {
+      const saveButton = event.target.closest("[data-save-user]");
+      const deleteButton = event.target.closest("[data-delete-user]");
+      if (saveButton) saveUser(saveButton.dataset.saveUser);
+      if (deleteButton) {
+        try {
+          await api(`/api/auth/admin/users/${deleteButton.dataset.deleteUser}/`, {method: "DELETE"});
+          showMessage(`Пользователь #${deleteButton.dataset.deleteUser} мягко удален.`);
+          await loadUsers();
+        } catch (error) {
+          showMessage(`Удаление пользователя: ${error.message}`, "error");
+        }
+      }
+    });
+
+    document.querySelector("#rolesTable").addEventListener("click", event => {
+      const button = event.target.closest("[data-save-role]");
+      if (button) saveRole(button.dataset.saveRole);
+    });
+
+    document.querySelector("#elementsTable").addEventListener("click", event => {
+      const button = event.target.closest("[data-save-element]");
+      if (button) saveElement(button.dataset.saveElement);
+    });
+
+    document.querySelector("#createUserForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        const payload = formData(event.currentTarget);
+        payload.role = Number(payload.role);
+        await api("/api/auth/admin/users/", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        event.currentTarget.reset();
+        showMessage("Пользователь создан.");
+        await loadUsers();
+      } catch (error) {
+        showMessage(`Создание пользователя: ${error.message}`, "error");
+      }
+    });
+
+    document.querySelector("#createRoleForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        await api("/api/access/roles/", {
+          method: "POST",
+          body: JSON.stringify(formData(event.currentTarget)),
+        });
+        event.currentTarget.reset();
+        showMessage("Роль создана.");
+        await loadRoles();
+      } catch (error) {
+        showMessage(`Создание роли: ${error.message}`, "error");
+      }
+    });
+
+    document.querySelector("#createElementForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        await api("/api/access/elements/", {
+          method: "POST",
+          body: JSON.stringify(formData(event.currentTarget)),
+        });
+        event.currentTarget.reset();
+        showMessage("Ресурс создан.");
+        await loadElements();
+      } catch (error) {
+        showMessage(`Создание ресурса: ${error.message}`, "error");
+      }
+    });
+
+    document.querySelector("#createRuleForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        const payload = checkboxPayload(event.currentTarget);
+        payload.role = Number(payload.role);
+        payload.element = Number(payload.element);
+        await api("/api/access/rules/", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        event.currentTarget.reset();
+        showMessage("Правило создано.");
+        await loadRules();
+      } catch (error) {
+        showMessage(`Создание правила: ${error.message}`, "error");
+      }
+    });
+
+    refreshProfile().then(() => {
+      if (state.user) {
+        ["products", "shops", "orders"].forEach(loadResource);
+        loadAdminData();
+      }
+    });
+  </script>
+</body>
+</html>

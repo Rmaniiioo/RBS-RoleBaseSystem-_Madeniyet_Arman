@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from access_control.models import AccessRoleRule, BussinesElement, Role
+from access_control.models import Role, BusinessElement, AccessRoleRule
 from access_control.permissions import IsAccessRulesAdmin
 from access_control.services import assert_can_access
 from access_control.serializer import (
@@ -10,9 +10,8 @@ from access_control.serializer import (
     RoleSerializer,
 )
 
-# Create your views here.
 class AccessAdminMixin:
-    permissions_classes = [IsAuthenticated, IsAccessRulesAdmin]
+    permission_classes = [IsAuthenticated, IsAccessRulesAdmin]
 
     def perform_create(self, serializer):
         assert_can_access(self.request.user, 'access_rules', 'create')
@@ -33,5 +32,10 @@ class RoleViewSet(AccessAdminMixin, viewsets.ModelViewSet):
 
 
 class BusinessElementViewSet(AccessAdminMixin, viewsets.ModelViewSet):
-    queryset = AccessRoleRule.objects.selected_related('role', 'element').all()
+    queryset = BusinessElement.objects.all() # Исправлено!
+    serializer_class = BusinessElementSerializer
+
+
+class AccessRoleRuleViewSet(AccessAdminMixin, viewsets.ModelViewSet):
+    queryset = AccessRoleRule.objects.select_related('role', 'element').all() 
     serializer_class = AccessRoleRuleSerializer

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views import View
 from rest_framework.permissions import IsAuthenticated 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,6 +9,10 @@ from business.mock_data import MOCK_OBJECTS
  
 
 # Create your views here.
+class HomeView(View):
+    def get(self, request):
+        return render(request, "business/home.html")
+
 class MockResourceView(APIView):
     permission_classes = [IsAuthenticated]
     element_code = None
@@ -22,17 +27,17 @@ class MockResourceView(APIView):
         ]
         return Response(visible)
 
-def post(self, request):
-    assert_can_access(request.user, self.element_code, 'create')
-    return Response(
-        {
-            "message": "Mock object created.",
-            "element": self.element_code,
-            "owner_id": request.user.id,
-            "payload": request.data,
-        },
-        status=201
-    )
+    def post(self, request):
+        assert_can_access(request.user, self.element_code, 'create')
+        return Response(
+            {
+                "message": "Mock object created.",
+                "element": self.element_code,
+                "owner_id": request.user.id,
+                "payload": request.data,
+            },
+            status=201
+        )
 
 
 class ProductView(MockResourceView):
